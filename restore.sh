@@ -2,6 +2,7 @@
 
 dir="$1"
 malicious_dir="$2"
+whitelist_file="whitelist.txt"
 
 while true
 do
@@ -54,6 +55,23 @@ do
     case "$action" in
         1)
             if [ ! -e "$dir/$filename" ] && [ ! -L "$dir/$filename" ]; then
+                # Calculate the hash of the file being restored
+                file_hash=$(sha256sum -- "$file" | cut -d ' ' -f 1)
+
+                if [ -z "$file_hash" ]; then
+                    echo "Error: Could not calculate file hash."
+                    continue
+                fi
+
+                # Add the hash if it is not already whitelisted
+                if ! grep -Fxq "$file_hash" "$whitelist_file" 2>/dev/null; then
+                    if ! echo "$file_hash" >> "$whitelist_file"; then
+                        echo "Error: Could not update the whitelist."
+                        continue
+                    fi
+                fi
+
+                # Restore the file
                 if mv -- "$file" "$dir/"; then
                     echo "Restored $filename to $dir."
                 else
@@ -63,6 +81,7 @@ do
                 echo "Error: A file named $filename already exists in $dir."
             fi
             ;;
+
         2)
             read -r -p "Permanently delete $filename? (y/n): " confirm
             if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then

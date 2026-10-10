@@ -77,3 +77,12 @@ The required lists are defined inside the `scan_dir()` function in `antivirusd.s
 - **Flagged keywords:** `virus`, `trojan`, `malware`, `worm`, `ransomware`. These are checked by the `grep -Eiq` command.
 
 The keyword check is case-insensitive. A file is considered malicious if it matches either rule.
+## Whitelist
+
+The whitelist is stored in `whitelist.txt` and saves the SHA-256 hashes of files marked as safe.
+
+When the user selects option 1 in `restore.sh`, the file's hash is added to the whitelist before the file is restored.
+
+During each scan, `antivirusd.sh` calculates the hash of each regular file and checks whether it exists in the whitelist. If the hash matches, the file is skipped and is not quarantined.
+
+The whitelist persists between runs, so restored files remain recognized as safe after the antivirus is restarted. If a file's contents change, its hash changes and it will be scanned normally.

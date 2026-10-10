@@ -3,6 +3,7 @@
 dir="$1"
 malicious_dir="$2"
 interval_secs="$3"
+whitelist_file="whitelist.txt"
 
 mkdir -p "$malicious_dir" || exit 1
 
@@ -12,8 +13,17 @@ scan_dir()
     do
         [ -f "$file" ] || continue
 
+        # Skip files whose content hash is whitelisted
+        file_hash=$(sha256sum -- "$file" | cut -d ' ' -f 1)
+
+        if [ -n "$file_hash" ] &&
+           grep -Fxq "$file_hash" "$whitelist_file" 2>/dev/null; then
+            continue
+        fi
+
         filename="${file##*/}"
         malicious=false
+
 
         case "$filename" in
             *.exe|*.bat|*.vbs|*.scr|*.ps1)
