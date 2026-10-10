@@ -1,6 +1,6 @@
 
-DIR = test
-MALICIOUS_DIR = trash
+DIR = test_dir
+MALICIOUS_DIR = quarantine
 INTERVAL_SECS = 5
 
 .PHONY: all pre-build antivirusd restore
